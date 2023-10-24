@@ -1,0 +1,143 @@
+env_params:
+  use_aes: false
+  cron_task_switch: true
+  log_level: debug
+  ding_talk_web_hook_url: https://oapi.dingtalk.com/robot/send?access_token=75524e9b46adb387682fe2474b9cdedb60cef931d80277a6b68122d3fb110787
+  gorm_log_level: 4
+  asr_app_id: 1307598545
+  asr_secret_id: AKIDUptgDTSAdroUt0wc190asue8MK1RaR3R
+  asr_secret_key: 92ez2oKZYIp54mDNGtFL9gwvd5HDsGND
+  redis_first_use_db: 10
+  share_photo_qr_code_url: https://h5.xhey.top/group-all-photos-test
+  app_personal_page_url: https://h5.xhey.top/app-personal-page-test
+  notification_trigger_switch: true
+  ios_audit_mode: true
+  forward_to_app_server_address: https://test.xhey.top/
+mysql:
+  xcamera: #业务类型
+    master: #主库
+      address: rm-wz9i2o05w5827f97s.mysql.rds.aliyuncs.com:3306
+      name: xcamera
+      user: test_admin
+      password: Sway_video
+    slaves: #从库
+      - address: rm-wz9i2o05w5827f97s.mysql.rds.aliyuncs.com:3306
+        name: xcamera
+        user: test_admin
+        password: Sway_video
+      - address: rm-wz9i2o05w5827f97s.mysql.rds.aliyuncs.com:3306
+        name: xcamera
+        user: test_admin
+        password: Sway_video
+  photo:
+    master:
+      address: rm-wz9i2o05w5827f97s.mysql.rds.aliyuncs.com:3306
+      name: photos
+      user: test_admin
+      password: Sway_video
+  message:
+    master:
+      address: rm-wz9i2o05w5827f97s.mysql.rds.aliyuncs.com:3306
+      name: message
+      user: test_admin
+      password: Sway_video
+  xadmin:
+    master:
+      address: rm-wz9i2o05w5827f97s.mysql.rds.aliyuncs.com:3306
+      name: xadmin
+      user: test_admin
+      password: Sway_video
+
+redis:
+  first: #主从DB
+    address: r-wz9r4olm9qm2clzuvw.redis.rds.aliyuncs.com:6379
+    password: XcameraTest0509
+  second: #集群版DB
+    address: r-wz9r4olm9qm2clzuvw.redis.rds.aliyuncs.com:6379
+    password: XcameraTest0509
+
+elastic:
+  shake: #摇一摇
+    url: http://es-cn-zvp269ei50023flho.elasticsearch.aliyuncs.com:9200/
+    username: elastic
+    password: 115b-a00c-4358-9237-9051
+  group_search: #团队搜索
+    url: http://es-cn-zvp269ei50023flho.elasticsearch.aliyuncs.com:9200/
+    username: elastic
+    password: 115b-a00c-4358-9237-9051
+  new_feature: #新功能配置
+    url: http://es-cn-zvp269ei50023flho.elasticsearch.aliyuncs.com:9200/
+    username: elastic
+    password: 115b-a00c-4358-9237-9051
+
+rpc:
+  data_center:
+    - 10.29.0.203:10006
+  xtrack:
+    - 10.29.0.102:16003
+  order_center:
+    - 127.0.0.1:14001
+  photo:
+    - 10.29.0.150:8080
+  location:
+    - 10.29.0.15:14001
+  user_center:
+    - 10.29.0.148:12001
+  attendance:
+    - 10.29.0.199:8080
+  workreport:
+    - workreport-server:12002
+  department:
+    - 10.29.0.122:15003
+  photosearch:
+    - xphotosearch:15002
+  watermark:
+    - watermark:12006
+  pgphotoservice:
+    - 10.29.0.150:8080
+  xpoi:
+    - xpoi.xhey-internal.top:80
+  comment:
+    - comment.xhey-internal.top:80
+  workgroup:
+    - 10.29.0.54:10080
+  member:
+    - membercenter:10080
+  contentctrl:
+    - content-control:8080
+  abtest:
+    - localhost:14001
+  function:
+    - xdownload.xhey-internal.top:80
+  archive:
+    - archive:10001
+  workreport_puzzle:
+    - data-migration-engine:8091
+
+kafka:
+  sensor:
+    address:
+      - 172.18.250.35:9092
+      - 172.18.250.36:9092
+      - 172.18.250.37:9092
+    topic: test-sa
+  shake:
+    address:
+      - 172.18.250.35:9092
+      - 172.18.250.37:9092
+      - 172.18.250.36:9092
+    topic: shake_invite_join_group
+    group: shake_invite_join_group
+  event:
+    address:
+      - 172.18.250.35:9092
+      - 172.18.250.37:9092
+      - 172.18.250.36:9092
+    topic: event_bus
+    group: event_bus_group
+  photo_delete:
+    address:
+      - 172.18.250.35:9092
+      - 172.18.250.36:9092
+      - 172.18.250.37:9092
+    topic: test-photo-deleted

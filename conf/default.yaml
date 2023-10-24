@@ -1,0 +1,108 @@
+env_params:
+  use_aes: ${use_aes}
+  cron_task_switch: ${cron_task_switch}
+  log_level: ${log_level}
+  ding_talk_web_hook_url: ${ding_talk_web_hook_url}
+  gorm_log_level: ${gorm_log_level}
+  asr_app_id: ${asr_app_id}
+  asr_secret_id: ${asr_secret_id}
+  asr_secret_key: ${asr_secret_key}
+  redis_first_use_db: ${redis_first_use_db}
+  share_photo_qr_code_url: ${share_photo_qr_code_url}
+  app_personal_page_url: ${app_personal_page_url}
+  notification_trigger_switch: ${notification_trigger_switch}
+  ios_audit_mode: ${ios_audit_mode}
+  forward_to_app_server_address: ${forward_to_app_server_address}
+
+mysql:
+  xcamera: #业务类型
+    master: #主库
+      address: ${xcamera}
+      name: xcamera
+      user: ${xcamera_user}
+      password: ${xcamera_password}
+    slaves: #从库
+      - address: ${xcamera}
+        name: xcamera
+        user: ${xcamera_user}
+        password: ${xcamera_password}
+      - address: ${xcamera}
+        name: xcamera
+        user: ${xcamera_user}
+        password: ${xcamera_password}
+
+redis:
+  first: #主从DB
+    address: ${first_redis}
+    password: ${first_redis_password}
+  second: #集群版DB
+    address: ${second_redis}
+    password: ${second_redis_password}
+
+elastic:
+  shake: #摇一摇
+    url: ${es_shake_url}
+    username: ${es_shake_username}
+    password: ${es_shake_password}
+  group_search: #团队搜索
+    url: ${es_group_search_url}
+    username: ${es_group_search_username}
+    password: ${es_group_search_password}
+  new_feature: #新功能配置
+    url: ${es_new_feature_url}
+    username: ${es_new_feature_username}
+    password: ${es_new_feature_password}
+  watermark_recommend: #水印搜索词推荐
+    url: ${es_watermark_recommend_url}
+    username: ${es_watermark_recommend_username}
+    password: ${es_watermark_recommend_password}
+
+rpc:
+  data_center:
+    - ${rpc_message}
+  xtrack:
+    - ${rpc_xtrack}
+  order_center:
+    - ${rpc_order}
+  photo:
+    - ${rpc_photo}
+  location:
+    - ${rpc_location}
+  user_center:
+    - ${rpc_user}
+  attendance:
+    - ${rpc_attendance}
+  workreport:
+    - ${rpc_workreport}
+  department:
+    - ${rpc_department}
+  photosearch:
+    - ${rpc_photosearch}
+  watermark:
+    - ${rpc_watermark}
+  pgphotoservice:
+    - ${rpc_pgphotoservice}
+  function:
+    - ${rpc_function}
+
+kafka:
+  sensor:
+    address:
+      - ${sensor_kafka1}
+      - ${sensor_kafka2}
+      - ${sensor_kafka3}
+    topic: ${sensor_topic}
+  shake:
+    address:
+      - ${dev_kafka1}
+      - ${dev_kafka2}
+      - ${dev_kafka3}
+    topic: shake_invite_join_group
+    group: shake_invite_join_group
+  event:
+    address:
+      - ${dev_kafka1}
+      - ${dev_kafka2}
+      - ${dev_kafka3}
+    topic: event_bus
+    group: event_bus_group

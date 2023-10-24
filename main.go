@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./config"
-	"./router"
 	"encoding/base64"
+	"github.com/alexfaker/Pantasy/config"
+	"github.com/alexfaker/Pantasy/router"
 	"log"
 	"strings"
 )
