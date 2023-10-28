@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
+	"log"
 	"sync"
 )
 
@@ -64,7 +65,7 @@ func (t *RedisDatabaseManager) Ping() {
 		db := t.get(k, 0)
 		pong, err := db.Ping(context.Background()).Result()
 		if err != nil {
-			xlog.Fatalf("Redis ping %s, pong: %+v, err: %+v", kVal.Address, pong, err)
+			log.Fatalf("Redis ping %s, pong: %+v, err: %+v", kVal.Address, pong, err)
 			return
 		}
 	}

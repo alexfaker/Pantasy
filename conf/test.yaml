@@ -3,56 +3,37 @@ mysql:
     master: #主库
       address: rm-wz9i2o05w5827f97s.mysql.rds.aliyuncs.com:3306
       name: xcamera
-      user: testxcamera
-      password: d7dd2351a5274a&09f703d0dd8fe9d44
+      user: test_admin
+      password: Sway_video
     slaves: #从库
       - address: rm-wz9i2o05w5827f97s.mysql.rds.aliyuncs.com:3306
         name: xcamera
-        user: testxcamera
-        password: d7dd2351a5274a&09f703d0dd8fe9d44
+        user: test_admin
+        password: Sway_video
       - address: rm-wz9i2o05w5827f97s.mysql.rds.aliyuncs.com:3306
         name: xcamera
-        user: testxcamera
-        password: d7dd2351a5274a&09f703d0dd8fe9d44
-  photo:
-    master: #主库
-      address: rm-wz97zn4hle3rkf37p.mysql.rds.aliyuncs.com:3306
-      name: photos
-      user: testphoto
-      password: testphoto4d639862&022210e17b17
-    slaves: #从库
-      - address: rm-wz97zn4hle3rkf37p.mysql.rds.aliyuncs.com:3306
-        name: photos
-        user: testphoto
-        password: testphoto4d639862&022210e17b17
-      - address: rm-wz97zn4hle3rkf37p.mysql.rds.aliyuncs.com:3306
-        name: photos
-        user: testphoto
-        password: testphoto4d639862&022210e17b17
-
+        user: test_admin
+        password: Sway_video
 redis:
   first: #主从DB
     address: r-wz9r4olm9qm2clzuvw.redis.rds.aliyuncs.com:6379
     password: XcameraTest0509
   second: #集群版DB
-    address: r-wz96teogf5v3eulyid.redis.rds.aliyuncs.com:6379
-    password: 879a-4283-9c8e-5a9578e9d374
+    address: r-wz9r4olm9qm2clzuvw.redis.rds.aliyuncs.com:6379
+    password: XcameraTest0509
 
+elastic:
+  shake: #摇一摇
+    url: http://es-cn-zvp269ei50023flho.elasticsearch.aliyuncs.com:9200/
+    username: elastic
+    password: 115b-a00c-4358-9237-9051
 rpc:
-  xpoi:
-    - 119.23.165.102:16001
-  photo:
-    - 119.23.165.102:16001
   data_center:
-    - 119.23.165.102:10006
-  order_center:
-    - 119.23.165.102:10006
-  location:
-    - 119.23.165.102:36004
+    - 10.29.0.203:10006
 kafka:
   sensor:
     address:
       - 172.18.250.35:9092
-      - 172.18.250.37:9092
       - 172.18.250.36:9092
+      - 172.18.250.37:9092
     topic: test-sa

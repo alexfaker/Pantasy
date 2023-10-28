@@ -81,9 +81,9 @@ func (t *DatabaseManager) get(business DatabaseBusiness, isLocal bool) *gorm.DB 
 
 func getMysqlDatabase(source string, replicas []string) *gorm.DB {
 	logSet := logger.Default.LogMode(logger.Silent)
-	if Instance.EnvParams.GORMLogLevel > int(logger.Silent) &&
-		Instance.EnvParams.GORMLogLevel <= int(logger.Info) {
-		logSet = logger.Default.LogMode(logger.LogLevel(Instance.EnvParams.GORMLogLevel))
+	if Instance.Env.GORMLogLevel > int(logger.Silent) &&
+		Instance.Env.GORMLogLevel <= int(logger.Info) {
+		logSet = logger.Default.LogMode(logger.LogLevel(Instance.Env.GORMLogLevel))
 	}
 	db, err := gorm.Open(mysql.Open(source), &gorm.Config{
 		Logger:                 logSet,
