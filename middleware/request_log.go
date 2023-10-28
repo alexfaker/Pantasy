@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/alexfaker/Pantasy/middleware/log"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync/atomic"
 	"time"
-
-	"github.com/alexfaker/Pantasy/public"
 
 	"github.com/gin-gonic/gin"
 )
@@ -83,16 +82,8 @@ func RequestOutLog(c *gin.Context) {
 	if len(body) > 1024 {
 		body = body[:1024]
 	}
-	logger.InfoCtx(c, "[%v] request: %v; response: %s, %s", connId, uri, string(body), http_info(r))
+	log.Infof("[%v] request: %v; response: %s, %s", connId, uri, string(body), http_info(r))
 
-	reportSensor(uri, r.Header.Get(SensorReqHeader), string(body), r.Header.Get(SensorExtraHeader), public.HttpInfo(r))
-
-	//endExecTime := time.Now()
-	//st, _ := c.Get("startExecTime")
-	//startExecTime, _ := st.(time.Time)
-
-	//logger.InfoCtx(c, "[%v] Completed %s %s in %v, %s", connId, r.Method,
-	//	r.RequestURI, endExecTime.Sub(startExecTime), http_info(r))
 }
 
 func RequestLog() gin.HandlerFunc {

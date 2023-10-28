@@ -17,7 +17,7 @@ func HttpReq(url, data string, connId uint64) string {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		log.Errorf("[%v] get err %s", connId, err.Error())
+		Log.Errorf("[%v] get err %s", connId, err.Error())
 		return ""
 	}
 	defer resp.Body.Close()
@@ -43,7 +43,7 @@ func HTTPReqWebVersion(url, data, webVersion string, connId uint64) string {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		log.Errorf("[%v] get err %s", connId, err.Error())
+		Log.Errorf("[%v] get err %s", connId, err.Error())
 		return ""
 	}
 	defer resp.Body.Close()
@@ -69,12 +69,12 @@ func HTTPReqWebVersion2(url, data, webVersion string, connId uint64) (string, er
 	resp, err := client.Do(req)
 
 	if err != nil {
-		log.Errorf("ERROR:[%v] get err %s", connId, err.Error())
+		Log.Errorf("ERROR:[%v] get err %s", connId, err.Error())
 		return "", err
 	}
 	defer resp.Body.Close()
 
-	log.Debugf("ContentLength:%d", resp.ContentLength)
+	Log.Debugf("ContentLength:%d", resp.ContentLength)
 	if resp.ContentLength < 0 {
 		return "", errors.New("ContentLength is -1")
 	}
@@ -83,12 +83,12 @@ func HTTPReqWebVersion2(url, data, webVersion string, connId uint64) (string, er
 	for nReadIndex < resp.ContentLength {
 		n, err := resp.Body.Read(buf[nReadIndex:])
 		if err != nil && err != io.EOF {
-			log.Errorf("ERROR:%s", err.Error())
+			Log.Errorf("ERROR:%s", err.Error())
 			return "", err
 		}
 		nReadIndex += int64(n)
 		if n == 0 {
-			log.Debugf("LEN:%d", nReadIndex)
+			Log.Debugf("LEN:%d", nReadIndex)
 			break
 		}
 	}

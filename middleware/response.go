@@ -1,209 +1,160 @@
-package middleware
+package dto
 
 import (
-	"bytes"
-	"encoding/base64"
-	"fmt"
-	"github.com/alexfaker/Pantasy/dto"
-	"github.com/alexfaker/Pantasy/public"
+	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"strings"
+
 	"github.com/gin-gonic/gin"
-	jsoniter "github.com/json-iterator/go"
-	"time"
+	"github.com/go-playground/validator/v10"
+
+	"codeup.aliyun.com/xhey/server/xappserver/public"
 )
 
-var IsEncrypted = false
-
-var statusText = map[int]string{
-	StatusOK:                  "success",
-	StatusBadRequest:          "param error",
-	StatusUnauthorized:        "verify error",
-	StatusForbidden:           "forbidden",
-	StatusNotFound:            "not found",
-	StatusInternalServerError: "service error",
-}
-
-const (
-	StatusOK                  = 200
-	StatusBadRequest          = 400
-	StatusUnauthorized        = 401
-	StatusForbidden           = 403
-	StatusNotFound            = 404
-	StatusInternalServerError = 500
+var (
+	// IsEncrypted if encrypted
+	IsEncrypted bool = false
+	xlog             = public.NewLog()
 )
 
-// 返回不加密的结果
-func PlainResponse(c *gin.Context, status int, data interface{}) {
-	response(c, status, data, false, false)
+type ResponseData struct {
+	Status  int         `json:"status" default:"0"`           // 状态 0: 成功, 其它失败
+	Payload interface{} `json:"payload" swaggerignore:"true"` // 返回的数据
 }
 
-func Response(c *gin.Context, status int, data interface{}) {
-	response(c, status, data, false, IsEncrypted)
+type PageResult struct {
+	TotalPage     uint64 `json:"totalPage" default:"10"` // 总页数
+	TotalCount    uint64 `json:"total" default:"98"`     // 总条数
+	PageNo        uint64 `json:"pageNo" default:"1"`     // 页码
+	PageSize      uint64 `json:"pageSize" default:"10"`  // 每页数量
+	PageStartTime int64  `json:"pageStartTime"`          // 第一页请求时间
 }
 
-func ResponseEscapeHTML(c *gin.Context, status int, data interface{}) {
-	responseEscapeHTML(c, status, data, false, IsEncrypted)
+type Response struct {
+	Code     int         `json:"code" default:"0"`          // 状态 0: 成功, 其它失败
+	Msg      string      `json:"msg" default:"succeed"`     // 错误信息
+	ToastMsg string      `json:"toast_msg" default:""`      // 弹窗信息
+	Data     interface{} `json:"data" swaggerignore:"true"` // 返回的数据
 }
 
-func ResponseBase64(c *gin.Context, status int, data interface{}) {
-	responseBase64(c, status, data, false, IsEncrypted)
+type H5Group struct {
+	GroupID string `json:"groupID" ` //群唯一ID，长id
 }
 
-func ResponsePayload(c *gin.Context, status int, data interface{}) {
-	response(c, status, data, true, IsEncrypted)
+// ResponseStatus 响应状态
+type ResponseStatus struct {
+	Status int    `json:"status" default:"0"` // 状态 0: 成功, 其它失败
+	Msg    string `json:"msg"`
+}
+type UserGroupSign struct {
+	UserID  string `json:"userID" validate:"required"`            //用户的唯一id
+	Sign    string `json:"sign" validate:"required,omitempty"`    //签名  userID+key求md5, 十六进制
+	GroupID string `json:"groupID" validate:"required,omitempty"` //群唯一ID，长id
 }
 
-func response(c *gin.Context, status int, data interface{}, directly, isEncrypted bool) {
-	var resp interface{}
-	resp = dto.Response{
-		Code:     status,
-		Msg:      statusText[status],
-		ToastMsg: "",
-		Data:     data,
-	}
-	if directly {
-		resp = data
-	}
-	c.Set("response", data)
+// UserSign 非团队请求
+type UserSign struct {
+	UserID string `json:"userID" validate:"required"`         //用户的唯一id
+	Sign   string `json:"sign" validate:"required,omitempty"` //签名  userID+key求md5, 十六进制
+}
+type OptionalUserGroupSign struct {
+	UserID  string `json:"userID"`  //用户的唯一id
+	Sign    string `json:"sign"`    //签名  userID+key求md5, 十六进制
+	GroupID string `json:"groupID"` //群唯一ID
+}
 
-	if isEncrypted == true {
+func getReqParams(c *gin.Context, o interface{}) error {
+	r := c.Request
+	if IsEncrypted == true {
+		body, _ := ioutil.ReadAll(r.Body)
+		r.Body.Close()
+
+		if len(strings.TrimSpace(string(body))) == 0 {
+			return errors.New("the params is null")
+		}
+
+		var req struct {
+			Params string `json:"params"`
+		}
+
+		if err := json.Unmarshal(body, &req); err != nil {
+			return err
+		}
+		if len(req.Params) == 0 {
+			return errors.New("the encrypted params is null")
+		}
 		var h public.AES_Handler
-		body, _ := jsoniter.Marshal(resp)
-		buf, _ := h.Encrypt(body)
-
-		type responseEncrypted struct {
-			Result string `json:"result"`
-		}
-
-		resp = responseEncrypted{
-			Result: buf,
-		}
-	}
-
-	startTime := time.Now().UnixNano() / 1000 // Golang 1.15不支持获取微妙时间戳
-	buf, err := jsoniter.Marshal(resp)
-	endTime := time.Now().UnixNano() / 1000
-
-	if err != nil {
-		log.Errorf(err.Error())
-		return
-	}
-
-	log.Infof("uri:%v,json序列化耗时:%v微妙,序列化后的大小:%v字节", c.Request.RequestURI, endTime-startTime, len(buf))
-
-	c.Writer.Header().Add("Content-Length", fmt.Sprintf("%v", len(buf)))
-	traceId := trace.GetTraceIdFromCtx(c)
-	if traceId != "" {
-		c.Writer.Header().Add("X-B3-Traceid", traceId)
-	}
-
-	nWriteIndex := 0
-	for nWriteIndex < len(buf) {
-		n, err := c.Writer.Write(buf[nWriteIndex:])
+		body, err := h.Decrypt(req.Params)
 		if err != nil {
-			log.Errorf("%v len:%v index:%v n:%v", err.Error(), len(buf), nWriteIndex, n)
-			return
+			return err
 		}
-		nWriteIndex += n
+		json.Unmarshal(body, o)
+
+		id, _ := c.Get("Conn-ID")
+		xlog.Infof("[%v] %s parameter: %s, %s", id, r.RequestURI,
+			(string)(body), public.HttpInfo(r))
+		r.Header.Add("request-parameter", (string)(body))
+	} else {
+		if err := c.ShouldBind(o); err != nil {
+			return err
+		}
 	}
-	c.Writer.Flush()
+
+	return nil
+
 }
 
-func responseBase64(c *gin.Context, status int, data interface{}, directly, isEncrypted bool) {
-	var resp interface{}
-	resp = dto.Response{
-		Code:     status,
-		Msg:      statusText[status],
-		ToastMsg: "",
-		Data:     data,
-	}
-	if directly {
-		resp = data
-	}
-	c.Set("response", data)
+var ginValidate *validator.Validate
 
-	if isEncrypted == true {
-		var h public.AES_Handler
-		body, _ := jsoniter.Marshal(resp)
-		body = []byte(base64.StdEncoding.EncodeToString(body))
-		buf, _ := h.Encrypt(body)
-
-		type responseEncrypted struct {
-			Result string `json:"result"`
-		}
-
-		resp = responseEncrypted{
-			Result: buf,
-		}
+func BindingValidParams(c *gin.Context, o interface{}) error {
+	if err := getReqParams(c, o); err != nil {
+		return err
 	}
-	buf, err := jsoniter.Marshal(resp)
+
+	if ginValidate == nil {
+		ginValidate = validator.New()
+	}
+	err := ginValidate.Struct(o)
 	if err != nil {
-		log.Errorf(err.Error())
-		return
+		return err
 	}
-	c.Writer.Header().Add("Content-Length", fmt.Sprintf("%v", len(buf)))
-	nWriteIndex := 0
-	for nWriteIndex < len(buf) {
-		n, err := c.Writer.Write(buf[nWriteIndex:])
-		if err != nil {
-			log.Errorf("%v len:%v index:%v n:%v", err.Error(), len(buf), nWriteIndex, n)
-			return
-		}
-		nWriteIndex += n
-	}
-	c.Writer.Flush()
+
+	return nil
 }
 
-func responseEscapeHTML(c *gin.Context, status int, data interface{}, directly, isEncrypted bool) {
-	var resp interface{}
-	resp = dto.Response{
-		Code:     status,
-		Msg:      statusText[status],
-		ToastMsg: "",
-		Data:     data,
+// BindingParams bind json
+func BindingParams(c *gin.Context, o interface{}) error {
+	if err := getReqParams(c, o); err != nil {
+		return err
 	}
-	if directly {
-		resp = data
+	return nil
+}
+
+func BindingParamsWithoutEncrypted(c *gin.Context, o interface{}) error {
+	if err := c.ShouldBind(o); err != nil {
+		return err
 	}
-	c.Set("response", data)
 
-	if isEncrypted == true {
-		var h public.AES_Handler
-		buffer := &bytes.Buffer{}
-		encoder := jsoniter.NewEncoder(buffer)
-		encoder.SetEscapeHTML(false)
-		encoder.Encode(resp)
-		buf, _ := h.Encrypt(buffer.Bytes())
-
-		type responseEncrypted struct {
-			Result string `json:"result"`
-		}
-
-		resp = responseEncrypted{
-			Result: buf,
-		}
+	if ginValidate == nil {
+		ginValidate = validator.New()
 	}
-	buffer := &bytes.Buffer{}
-	encoder := jsoniter.NewEncoder(buffer)
-	encoder.SetEscapeHTML(false)
-	err := encoder.Encode(resp)
+	err := ginValidate.Struct(o)
 	if err != nil {
-		log.Errorf(err.Error())
-		return
+		return err
 	}
-	buf := buffer.Bytes()
-	c.Writer.Header().Add("Content-Length", fmt.Sprintf("%v", len(buf)))
-	traceId := trace.GetTraceIdFromCtx(c)
-	if traceId != "" {
-		c.Writer.Header().Add("X-B3-Traceid", traceId)
+	return nil
+}
+
+// CheckGinValidate check
+func CheckGinValidate(o interface{}) error {
+	if ginValidate == nil {
+		ginValidate = validator.New()
 	}
-	nWriteIndex := 0
-	for nWriteIndex < len(buf) {
-		n, err := c.Writer.Write(buf[nWriteIndex:])
-		if err != nil {
-			log.Errorf("%v len:%v index:%v n:%v", err.Error(), len(buf), nWriteIndex, n)
-			return
-		}
-		nWriteIndex += n
+	err := ginValidate.Struct(o)
+	if err != nil {
+		return err
 	}
-	c.Writer.Flush()
+
+	return nil
 }

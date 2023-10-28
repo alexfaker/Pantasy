@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/alexfaker/Pantasy/middleware/log"
 	"runtime/debug"
 
 	"github.com/gin-gonic/gin"

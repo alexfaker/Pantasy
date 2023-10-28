@@ -15,12 +15,9 @@ type DatabaseAccess string   //访问类型
 
 const (
 	DatabaseBusinessXCamera = DatabaseBusiness("xcamera")
-	DatabaseBusinessPhoto   = DatabaseBusiness("photo")
-	DatabaseBusinessMessage = DatabaseBusiness("message")
-	DatabaseBusinessXAdmin  = DatabaseBusiness("xadmin")
 )
 
-//获取一个Mysql实例
+// 获取一个Mysql实例
 func MysqlGet(business DatabaseBusiness) *gorm.DB {
 	return localDatabaseManager.get(business, false)
 }
